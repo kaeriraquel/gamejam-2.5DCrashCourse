@@ -26,21 +26,25 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float slideDuration = 0.6f;
 
     [SerializeField] private PlayerState currentState = PlayerState.Idle;
+    [SerializeField] private bool isCrouching = false;
+    [SerializeField] private Transform visualTransform;// arrastra aquí el hijo visual en el Inspector
 
     private CharacterController controller;
     private float verticalVelocity;
     private float slideTimer;
     private Vector3 slideDirection;
 
-    private void Awake()
-    {
-        controller = GetComponent<CharacterController>();
-    }
+private void Awake()
+{
+    controller = GetComponent<CharacterController>();
+    SetCrouch(false); // fuerza el estado inicial correcto (altura normal)
+}
 
     private void Update()
     {
         Move();
     }
+
 
     private void Move()
     {
@@ -48,51 +52,48 @@ public class PlayerMovement : MonoBehaviour
         float vertical = Input.GetAxis("Vertical");
 
         bool crouchPressed = Input.GetKey(KeyCode.LeftControl);
-        bool crouchStarted = Input.GetKeyDown(KeyCode.LeftControl);
 
-        Vector3 movement = new Vector3(
-            horizontal,
-            0f,
-            vertical
-        );
+        // Solo actualiza el collider cuando el estado realmente cambia
+        if (crouchPressed != isCrouching)
+        {
+            isCrouching = crouchPressed;
+            SetCrouch(isCrouching);
+            Debug.Log("Crouch: " + isCrouching); // <-- quítalo después de probar
+        }
 
-        movement *= moveSpeed;
+        Vector3 movement = new Vector3(horizontal, 0f, vertical);
+        bool isMoving = movement.magnitude > 0.1f;
 
-        // Jump
-        if (Input.GetButtonDown("Jump") && controller.isGrounded)
+        float currentSpeed = isCrouching ? crouchSpeed : moveSpeed;
+        movement *= currentSpeed;
+
+        if (Input.GetButtonDown("Jump") && controller.isGrounded && !isCrouching)
         {
             Jump();
         }
 
-        // Ground
         if (controller.isGrounded && verticalVelocity <= 0)
         {
-            if (movement.magnitude > 0.1f)
-            {
+            if (isCrouching)
+                ChangeState(isMoving ? PlayerState.CrouchWalk : PlayerState.Idle);
+            else if (isMoving)
                 ChangeState(PlayerState.Run);
-            }
             else
-            {
                 ChangeState(PlayerState.Idle);
-            }
 
             verticalVelocity = -2f;
         }
 
-        // Gravity
         verticalVelocity += gravity * Time.deltaTime;
 
-        // Falling
         if (!controller.isGrounded && verticalVelocity < 0)
         {
             ChangeState(PlayerState.Fall);
         }
 
         movement.y = verticalVelocity;
-
         controller.Move(movement * Time.deltaTime);
     }
-
     private void Jump()
     {
         ChangeState(PlayerState.Jump);
@@ -101,17 +102,21 @@ public class PlayerMovement : MonoBehaviour
             jumpHeight * -2f * gravity
         );
     }
+
     private void SetCrouch(bool crouching)
     {
-        if (crouching)
+        float targetHeight = crouching ? crouchHeight : normalHeight;
+
+        // Collider (colisión física, invisible)
+        controller.height = targetHeight;
+        controller.center = new Vector3(0f, targetHeight / 2f, 0f);
+
+        // Visual (lo que ves en pantalla)
+        if (visualTransform != null)
         {
-            controller.height = crouchHeight;
-            controller.center = new Vector3(0f, crouchHeight / 2f, 0f);
-        }
-        else
-        {
-            controller.height = normalHeight;
-            controller.center = new Vector3(0f, normalHeight / 2f, 0f);
+            float scaleRatio = targetHeight / normalHeight;
+            visualTransform.localScale = new Vector3(1f, scaleRatio, 1f);
+            visualTransform.localPosition = new Vector3(0f, targetHeight / 2f, 0f);
         }
     }
 
