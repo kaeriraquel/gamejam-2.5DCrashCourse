@@ -16,8 +16,8 @@ public enum PlayerState
 public class PlayerMovement : MonoBehaviour
 {
     // ====== MOVIMIENTO NORMAL ======
-    [SerializeField] private float moveSpeed = 5f;      
-    [SerializeField] private float gravity = -9.81f;    
+    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float gravity = -9.81f;
     [SerializeField] private float jumpHeight = 2f;      // Altura ddel slto
 
     // ======agacharse ======
@@ -27,21 +27,22 @@ public class PlayerMovement : MonoBehaviour
 
     // ====== deslizarse ======
     [SerializeField] private float slideSpeed = 8f;      // Velocidadmás rápido que correr
-    [SerializeField] private float slideDuration = 0.6f; 
+    [SerializeField] private float slideDuration = 0.6f;
     [SerializeField] private KeyCode slideKey = KeyCode.LeftShift;
 
     // ====== DOBLE SALTO ======
     [SerializeField] private int maxJumps = 2;           // Saltos totales
     private int jumpsRemaining;                          // Saltos que le quedan antes de tocar suelo de nuevo
+    private bool raceStarted = false;
 
-    
-    [SerializeField] private Transform visualTransform;  
+
+    [SerializeField] private Transform visualTransform;
 
     [SerializeField] private PlayerState currentState = PlayerState.Idle;
 
     private CharacterController controller;
     private float verticalVelocity; // salto + gravedad
-    private float slideTimer;       
+    private float slideTimer;
     private bool isCrouching = false;
     private bool isSliding = false;
     private bool hasWon = false;
@@ -49,13 +50,15 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
-        SetCrouch(false);           
-        jumpsRemaining = maxJumps; 
+        SetCrouch(false);
+        jumpsRemaining = maxJumps;
     }
 
     private void Update()
     {
-      
+        if (!raceStarted)
+            return;
+
         if (isSliding)
             Slide();
         else
@@ -72,7 +75,7 @@ public class PlayerMovement : MonoBehaviour
         if (slideStarted && currentState == PlayerState.Run && controller.isGrounded)
         {
             StartSlide();
-            return; 
+            return;
         }
 
         // --- CROUCH
@@ -82,10 +85,10 @@ public class PlayerMovement : MonoBehaviour
             SetCrouch(isCrouching);
         }
 
-    
+
         float currentSpeed = isCrouching ? crouchSpeed : moveSpeed;
 
-     
+
         Vector3 movement = transform.forward * currentSpeed;
 
         // --- JUMP / DOBLE SALTO
@@ -126,7 +129,7 @@ public class PlayerMovement : MonoBehaviour
         isSliding = true;
         slideTimer = slideDuration;
 
-        SetCrouch(true); 
+        SetCrouch(true);
         ChangeState(PlayerState.Slide);
     }
 
@@ -153,11 +156,11 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-     private void EndSlide()
+    private void EndSlide()
     {
         isSliding = false;
 
-       
+
         bool crouchStillHeld = Input.GetKey(KeyCode.LeftControl);
         isCrouching = crouchStillHeld;
         SetCrouch(crouchStillHeld);
@@ -169,9 +172,9 @@ public class PlayerMovement : MonoBehaviour
     private void Jump()
     {
         ChangeState(PlayerState.Jump);
-       
+
         verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
-        jumpsRemaining--; 
+        jumpsRemaining--;
     }
 
     // crouch
@@ -183,7 +186,7 @@ public class PlayerMovement : MonoBehaviour
         controller.height = targetHeight;
         controller.center = new Vector3(0f, targetHeight / 2f, 0f);
 
-        
+
         // para que los "pies" sigan tocando el piso en vez de flotar o hundirse
         if (visualTransform != null)
         {
@@ -196,18 +199,58 @@ public class PlayerMovement : MonoBehaviour
     // meta win
     public void TriggerWin()
     {
+        if (!raceStarted)
+            return;
+
         hasWon = true;
+        raceStarted = false;
+
         isSliding = false;
         verticalVelocity = 0f;
+
         ChangeState(PlayerState.Win);
-        enabled = false; //detiene al personaje cuando toca la meta o bueno el colliderr
+
+        // Avisamos al RaceManager.
+        RaceManager raceManager = FindFirstObjectByType<RaceManager>();
+
+        if (raceManager != null)
+        {
+            raceManager.RaceWon();
+        }
     }
 
-    
+
     private void ChangeState(PlayerState newState)
     {
         if (currentState == newState) return;
         currentState = newState;
         // Debug.Log("State changed to: " + currentState);
+    }
+
+    public void StartRace()
+    {
+        raceStarted = true;
+
+        hasWon = false;
+
+        enabled = true;
+
+        ChangeState(PlayerState.Run);
+    }
+
+    public void PrepareForMenu()
+    {
+        raceStarted = false;
+
+        isSliding = false;
+        isCrouching = false;
+        hasWon = false;
+
+        verticalVelocity = 0f;
+        jumpsRemaining = maxJumps;
+
+        SetCrouch(false);
+
+        ChangeState(PlayerState.Idle);
     }
 }
