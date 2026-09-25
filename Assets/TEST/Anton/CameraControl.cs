@@ -17,6 +17,7 @@ public class CameraControl : MonoBehaviour
         _camera.transform.LookAt(followTarget);
 
         Vector3 pos = _camera.transform.position;
+        pos.y = followTarget.position.y;
         pos.x = followTarget.position.x - 2f;
         _camera.transform.position = pos;
     }

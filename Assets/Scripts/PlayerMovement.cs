@@ -39,6 +39,13 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private PlayerState currentState = PlayerState.Idle;
 
+    [SerializeField]
+    Transform followTarget;
+
+    float originalFollowTargetYPos;
+
+    public bool CanMove = false;
+
     private CharacterController controller;
     private float verticalVelocity; // salto + gravedad
     private float slideTimer;       
@@ -48,6 +55,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void Awake()
     {
+        originalFollowTargetYPos = followTarget.position.y;
+
         controller = GetComponent<CharacterController>();
         SetCrouch(false);           
         jumpsRemaining = maxJumps; 
@@ -55,11 +64,23 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-      
-        if (isSliding)
-            Slide();
-        else
-            Move();
+        if (CanMove)
+        {
+            if (isSliding)
+                Slide();
+            else
+                Move();
+        }
+    }
+
+    public void StartRunning()
+    {
+        CanMove = true;
+    }
+
+    public void StopRunning()
+    {
+        CanMove = false;
     }
 
     // movimientos principales
