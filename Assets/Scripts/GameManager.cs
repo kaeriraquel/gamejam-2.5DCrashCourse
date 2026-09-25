@@ -7,12 +7,12 @@ public class GameManager : MonoBehaviour
 
     public void StartRunning()
     {
-        Player.StartRunning();
+        Player.StartRace();
     }
 
     public void StopRunning()
     {
-        Player.StopRunning();
+        Player.TriggerWin();
     }
 
 
