@@ -55,7 +55,7 @@ public class RaceManager : MonoBehaviour
 
         Debug.Log("Iniciando carrera en: " + tier);
 
-        // Aquí después puedes generar la pista.
+
         // trackGenerator.Generate(tier);
 
         difficultyPanel.SetActive(false);
