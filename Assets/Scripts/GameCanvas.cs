@@ -10,16 +10,19 @@ public class GameCanvas : MonoBehaviour
     GameObject countdownPanel;
     [SerializeField]
     GameManager manager;
+    [SerializeField]
+    GameObject mainMenuPanel;
 
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public void StartRace()
     {
-        StartCoroutine(CountDownRoutine());  
+        mainMenuPanel.SetActive(false);
+        countdownPanel.SetActive(true);
+
+        StartCoroutine(CountDownRoutine());
     }
 
     IEnumerator CountDownRoutine()
-    {
+    {        
         int count = 3;
 
         while (count > 0)

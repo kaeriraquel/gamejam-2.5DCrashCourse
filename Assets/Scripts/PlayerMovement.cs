@@ -15,6 +15,9 @@ public enum PlayerState
 
 public class PlayerMovement : MonoBehaviour
 {
+    [SerializeField]
+    Animator anim;
+
     // ====== MOVIMIENTO NORMAL ======
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float gravity = -9.81f;
@@ -200,7 +203,7 @@ public class PlayerMovement : MonoBehaviour
         if (visualTransform != null)
         {
             float scaleRatio = targetHeight / normalHeight;
-            visualTransform.localScale = new Vector3(1f, scaleRatio, 1f);
+            //visualTransform.localScale = new Vector3(1f, scaleRatio, 1f);
             visualTransform.localPosition = new Vector3(0f, targetHeight / 2f, 0f);
         }
     }
@@ -232,7 +235,19 @@ public class PlayerMovement : MonoBehaviour
     private void ChangeState(PlayerState newState)
     {
         if (currentState == newState) return;
+
         currentState = newState;
+
+        switch (newState)
+        { 
+            case PlayerState.Idle: anim.Play("Idle"); break;
+            case PlayerState.Run: anim.Play("Running"); break;
+            case PlayerState.Jump: anim.Play("Jumping"); break;
+            case PlayerState.Fall: anim.Play("Falling"); break;
+            case PlayerState.Slide: anim.Play("Sliding");break;
+            case PlayerState.Win: anim.Play("Win"); break;
+        }
+
         // Debug.Log("State changed to: " + currentState);
     }
 
