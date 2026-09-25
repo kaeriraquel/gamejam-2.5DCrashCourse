@@ -27,7 +27,7 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private PlayerState currentState = PlayerState.Idle;
     [SerializeField] private bool isCrouching = false;
-    [SerializeField] private Transform visualTransform;// arrastra aquí el hijo visual en el Inspector
+    [SerializeField] private Transform visualTransform;
 
     private CharacterController controller;
     private float verticalVelocity;
@@ -37,7 +37,7 @@ public class PlayerMovement : MonoBehaviour
 private void Awake()
 {
     controller = GetComponent<CharacterController>();
-    SetCrouch(false); // fuerza el estado inicial correcto (altura normal)
+    SetCrouch(false); 
 }
 
     private void Update()
@@ -58,7 +58,7 @@ private void Awake()
         {
             isCrouching = crouchPressed;
             SetCrouch(isCrouching);
-            Debug.Log("Crouch: " + isCrouching); // <-- quítalo después de probar
+            // Debug.Log("Crouch: " + isCrouching);
         }
 
         Vector3 movement = new Vector3(horizontal, 0f, vertical);
@@ -111,7 +111,7 @@ private void Awake()
         controller.height = targetHeight;
         controller.center = new Vector3(0f, targetHeight / 2f, 0f);
 
-        // Visual (lo que ves en pantalla)
+        // Visual (lo que se ve enpantalla)
         if (visualTransform != null)
         {
             float scaleRatio = targetHeight / normalHeight;
