@@ -21,8 +21,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float jumpHeight = 2f;      // Altura ddel slto
 
     // ======agacharse ======
-    [SerializeField] private float crouchHeight = 1f;   
-    [SerializeField] private float normalHeight = 2f;    
+    [SerializeField] private float crouchHeight = 1f;   //altura del collider agachado
+    [SerializeField] private float normalHeight = 2f;    //altura del collider normal
     [SerializeField] private float crouchSpeed = 2.5f;   // Velocidad  mientras está agachado
 
     // ====== deslizarse ======
